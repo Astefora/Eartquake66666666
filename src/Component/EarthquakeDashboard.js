@@ -175,6 +175,7 @@ export default function EarthquakeDashboard() {
   const [announcedEarthquakeIds, setAnnouncedEarthquakeIds] = useState(new Set());
   const [isDownloading, setIsDownloading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const audioRef = useRef(null);
 
   const fetchEarthquakes = useCallback(async () => {
@@ -443,6 +444,10 @@ export default function EarthquakeDashboard() {
     // This function is not needed as the useEffect already applies filters
     // But we keep it for the button click to manually trigger filter application
     console.log("Filters applied manually");
+    // Close mobile filters after applying
+    if (window.innerWidth <= 600) {
+      setShowMobileFilters(false);
+    }
   };
 
   return (
@@ -580,21 +585,68 @@ export default function EarthquakeDashboard() {
         )}
       </div>
 
-      {/* Filter Panel */}
+      {/* Mobile Filter Toggle Button */}
+      {window.innerWidth <= 600 && (
+        <button
+          onClick={() => setShowMobileFilters(!showMobileFilters)}
+          style={{
+            position: "absolute",
+            top: 70,
+            left: 10,
+            zIndex: 1500,
+            backgroundColor: "#ff6b6b",
+            color: "#fff",
+            border: "none",
+            borderRadius: "30px",
+            padding: "10px 20px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            cursor: "pointer"
+          }}
+        >
+          <MagnitudeIcon size={16} />
+          {showMobileFilters ? "Hide Filters ▲" : "Show Filters ▼"}
+          <span style={{ 
+            backgroundColor: "#fff", 
+            color: "#ff6b6b", 
+            borderRadius: "50%", 
+            width: "20px", 
+            height: "20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "12px",
+            fontWeight: "bold"
+          }}>
+            {filteredEarthquakes.length}
+          </span>
+        </button>
+      )}
+
+      {/* Filter Panel - Desktop and Mobile */}
       <div style={{
-        position: "absolute", 
-        top: window.innerWidth < 600 ? (window.innerWidth < 500 ? 130 : 140) : 150, 
-        right: window.innerWidth < 600 ? 10 : 20, 
-        width: window.innerWidth < 500 ? "calc(100% - 20px)" : window.innerWidth < 600 ? 240 : 260,
-        left: window.innerWidth < 500 ? 10 : "auto",
-        backgroundColor: "rgba(20, 30, 40, 0.95)", 
+        position: window.innerWidth <= 600 ? "absolute" : "absolute", 
+        top: window.innerWidth <= 600 
+          ? (showMobileFilters ? 120 : -500) 
+          : (window.innerWidth < 600 ? (window.innerWidth < 500 ? 130 : 140) : 150), 
+        right: window.innerWidth <= 600 ? 10 : (window.innerWidth < 600 ? 10 : 20), 
+        left: window.innerWidth <= 600 ? 10 : (window.innerWidth < 500 ? 10 : "auto"),
+        width: window.innerWidth <= 600 ? "calc(100% - 20px)" : (window.innerWidth < 500 ? "calc(100% - 20px)" : window.innerWidth < 600 ? 240 : 260),
+        backgroundColor: "rgba(20, 30, 40, 0.98)", 
         backdropFilter: "blur(8px)",
         color: "#fff", 
         padding: window.innerWidth < 600 ? "16px" : "20px", 
         borderRadius: "16px", 
-        zIndex: 1000,
+        zIndex: window.innerWidth <= 600 ? 1400 : 1000,
         boxShadow: "0 8px 24px rgba(0,0,0,0.5)", 
-        border: "1px solid rgba(255,255,255,0.1)"
+        border: "1px solid rgba(255,255,255,0.1)",
+        transition: window.innerWidth <= 600 ? "top 0.3s ease-in-out" : "none",
+        maxHeight: window.innerWidth <= 600 ? "70vh" : "auto",
+        overflowY: window.innerWidth <= 600 ? "auto" : "visible"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
           <MagnitudeIcon size={24} />
@@ -864,7 +916,7 @@ export default function EarthquakeDashboard() {
         padding: window.innerWidth < 600 ? "12px" : "20px", 
         borderRadius: "16px", 
         boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
-        zIndex: 1000, 
+        zIndex: window.innerWidth <= 600 ? 900 : 1000, 
         color: "#fff", 
         border: "1px solid rgba(255,255,255,0.1)", 
         minWidth: window.innerWidth < 500 ? "auto" : "200px",
@@ -926,7 +978,7 @@ export default function EarthquakeDashboard() {
         textAlign: "center", 
         fontSize: window.innerWidth < 600 ? "10px" : "14px",
         borderTop: "1px solid rgba(255,255,255,0.1)", 
-        zIndex: 1000,
+        zIndex: 800,
         display: "flex", 
         justifyContent: "center", 
         alignItems: "center", 

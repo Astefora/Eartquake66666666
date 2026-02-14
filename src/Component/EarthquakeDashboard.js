@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -177,7 +177,7 @@ export default function EarthquakeDashboard() {
   const [showDebug, setShowDebug] = useState(false);
   const audioRef = useRef(null);
 
-  const fetchEarthquakes = async () => {
+  const fetchEarthquakes = useCallback(async () => {
     setIsLoading(true);
     try {
       const url = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2000-01-01&endtime=${new Date().toISOString().slice(0, 10)}&minlatitude=3.4&maxlatitude=14.9&minlongitude=32.9&maxlongitude=48.3`;
@@ -282,7 +282,7 @@ export default function EarthquakeDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [previousEarthquakeIds, announcedEarthquakeIds]);
 
   useEffect(() => {
     fetchEarthquakes();
@@ -293,7 +293,7 @@ export default function EarthquakeDashboard() {
         window.speechSynthesis.cancel();
       }
     };
-  }, []);
+  }, [fetchEarthquakes]);
 
   // Apply filters - this updates the map with selected data
   useEffect(() => {
@@ -398,7 +398,6 @@ export default function EarthquakeDashboard() {
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     
-    const dateStr = new Date().toISOString().split('T')[0];
     link.download = `ethiopia_earthquakes_${startDate}_to_${endDate}.csv`;
     
     document.body.appendChild(link);
@@ -424,7 +423,6 @@ export default function EarthquakeDashboard() {
       // Generate KMZ file
       const blob = await zip.generateAsync({ type: "blob" });
       
-      const dateStr = new Date().toISOString().split('T')[0];
       saveAs(blob, `ethiopia_earthquakes_${startDate}_to_${endDate}.kmz`);
       
     } catch (error) {
